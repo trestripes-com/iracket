@@ -16,7 +16,7 @@
 
 ;; execute_request
 (define (make-display-text v)
-  (cons 'text/plain (format "~a" v)))
+  (cons 'text/plain (format "~v" v)))
 
 (define (make-display-convertible conversion-type mime-type v
                                   #:encode [encode values])
