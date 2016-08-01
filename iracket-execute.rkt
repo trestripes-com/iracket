@@ -32,16 +32,21 @@
     [else #f]))
 
 (define (make-display-results v)
-  (filter values
-          (list (or (make-display-convertible 'text 'text/plain v)
-                    (make-display-text v))
-                (make-display-c3 v)
-                ; svg seems to be broken in tons of browsers
-                ; (make-display-convertible 'svg-bytes 'image/svg+xml v)
-                (make-display-convertible 'png-bytes 'image/png v #:encode base64-encode)
-                (make-display-convertible 'gif-bytes 'image/gif v #:encode base64-encode)
-                (make-display-convertible 'ps-bytes 'application/postscript v #:encode base64-encode)
-                (make-display-convertible 'pdf-bytes 'application/pdf v #:encode base64-encode))))
+  (define conv-results
+    (filter
+     values
+     (list (make-display-c3 v)
+           ;; svg seems to be broken in tons of browsers
+           ;; (make-display-convertible 'svg-bytes 'image/svg+xml v)
+           (make-display-convertible 'png-bytes 'image/png v #:encode base64-encode)
+           ;; (make-display-convertible 'gif-bytes 'image/gif v #:encode base64-encode)
+           ;; (make-display-convertible 'ps-bytes 'application/postscript v #:encode base64-encode)
+           (make-display-convertible 'pdf-bytes 'application/pdf v #:encode base64-encode)
+           (make-display-convertible 'text 'text/plain v))))
+  (cond [(pair? conv-results)
+         conv-results]
+        [else
+         (list (make-display-text v))]))
 
 (define (make-kill-thread/custodian cust)
   (λ (t)
