@@ -24,7 +24,7 @@
                  [sandbox-propagate-exceptions #f]
                  [sandbox-namespace-specs (list sandbox-make-namespace 'file/convertible)]
                  [sandbox-path-permissions (list (list 'read "/"))])
-    (define e (make-evaluator '(begin) #:allow-for-require '(gamble gamble/viz)))
+    (define e (make-evaluator '(begin)))
     (ipy:call-with-services cfg (λ (services) (work cfg services e))))
   (display "Kernel terminating.\n"))
 

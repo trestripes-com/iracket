@@ -22,7 +22,4 @@
    'banner "IRacket 1.0"
    'help_links (list (hasheq
                       'text "Racket docs"
-                      'url "http://docs.racket-lang.org")
-                     (hasheq
-                      'text "Gamble docs"
-                      'url "http://rmculpepper.github.io/gamble/"))))
+                      'url "http://docs.racket-lang.org"))))
