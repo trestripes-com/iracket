@@ -7,10 +7,11 @@ IRacket is a Racket kernel for IPython/Jupyter.
 ## Requirements
 
 * [Racket v6](http://racket-lang.org)
-* These Racket packages installed (via `raco pkg install`):
-    * [`git://github.com/greghendershott/sha.git`](https://github.com/greghendershott/sha)
-    * [`git://github.com/mordae/racket-libuuid.git`](https://github.com/mordae/racket-libuuid)
-    * [`git://github.com/tgiannak/racket-zeromq.git#wait-on-fd`](https://github.com/tgiannak/racket-zeromq#wait-on-fd)
+* Install the following packages:
+  * `raco pkg install sha`
+  * `raco pkg install libuuid`
+  * `raco pkg install git://github.com/tgiannak/racket-zeromq.git#wait-on-fd`
+    (IRacket will not work with the standard `zeromq` package.)
 * [ZeroMQ](http://zeromq.org)
 
 ## Installation steps
@@ -24,7 +25,7 @@ IRacket is a Racket kernel for IPython/Jupyter.
 If you previously installed IRacket, answer "n" when it asks about
 installing C3 integration.  Otherwise say "y" or hit enter.
 
-### Manual installation instructions
+### Alternative: Manual installation instructions
 
 1. Clone this repository.
 2. Run the following from the root of this repository
@@ -94,3 +95,7 @@ Run the IPython notebook server as you usually do, e.g.
 ipython notebook
 ```
 and create a new notebook with the Racket kernel.
+
+# Examples
+
+See the `examples` subdirectory for example notebooks.
