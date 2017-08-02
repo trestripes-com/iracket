@@ -5,10 +5,6 @@ IRacket is a Racket kernel for
 interactive notebook-style programming with Racket. This package also includes
 Racket bindings for the [C3.js](http://c3js.org/) charting library.
 
-This package includes a number of sample notebooks that demonstrate IRacket and
-the [Gamble](https://github.com/rmculpepper/gamble) probabilistic programming
-language.
-
 # Installation
 
 ## Requirements
