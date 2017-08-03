@@ -5,47 +5,48 @@ IRacket is a Racket kernel for
 interactive notebook-style programming with Racket. This package also includes
 Racket bindings for the [C3.js](http://c3js.org/) charting library.
 
+
 # Installation
 
-## Requirements
+First install the iracket package:
 
-* [Racket v6](http://racket-lang.org)
-* Install the following packages:
-  * `raco pkg install sha`
-  * `raco pkg install libuuid`
-  * `raco pkg install git://github.com/tgiannak/racket-zeromq.git#wait-on-fd`
-    (IRacket will not work with the standard `zeromq` package.)
+* `raco pkg install iracket`
+
+Then register the iracket kernel with IPython/Jupyter:
+
+* `racket -l iracket/install`
+
+# Requirements
+
+* [Racket v6.10](http://racket-lang.org)
 * [ZeroMQ](http://zeromq.org)
 * [IPython version 3.2.1](https://pypi.python.org/pypi/ipython/3.2.1)
 
-## Installation steps
 
-1. Clone this repository.
-2. Run the `installation.sh` script from the current directory.
+# Using the kernel
+
+Run the IPython notebook server as you usually do, e.g.
 ```bash
-./installation.sh
+ipython notebook
 ```
-
-If you previously installed IRacket, answer "n" when it asks about
-installing C3 integration.  Otherwise say "y" or hit enter.
-
-### Alternative: Manual installation instructions
-
-1. Clone this repository.
-2. Run the following from the root of this repository
+or
 ```bash
-mkdir -p $(ipython locate)/kernels/racket/
-cp ./static/kernel.json $(ipython locate)/kernels/racket/kernel.json
+jupyter notebook
 ```
-3. Adjust the copied `kernel.json` to refer to iracket in the path of this
-   repository in place of `IRACKET_SRC_DIR`.
-4. If `racket` isn't on your path, adjust the copied `kernel.json` to refer to
-   the absolute path of `racket`.
+and create a new notebook with the Racket kernel, or open
+`examples/getting-started.ipynb` in the iracket source directory.
 
-#### C3 Integration (Charts)
 
-_Note that the front-end integration for C3 will eventually be moved into its
-own repository._
+# Examples
+
+See the `examples` subdirectory for example notebooks.
+
+
+# C3 (Charts) Integration (Experimental!)
+
+C3 support is extremely unstable. It will change in the near future.
+
+## Installing C3 Support
 
 If you use a non-default profile, set `IPYTHON_PROFILE` to the name of that
 profile, then run the following:
@@ -93,16 +94,3 @@ on how to write JSON in Racket, see the Racket
 
 Note that certain C3 features are not currently usable because they rely
 on using Javascript functions, which are not expressible in JSON.
-
-
-# Using the kernel
-
-Run the IPython notebook server as you usually do, e.g.
-```bash
-ipython notebook
-```
-and create a new notebook with the Racket kernel.
-
-# Examples
-
-See the `examples` subdirectory for example notebooks.
