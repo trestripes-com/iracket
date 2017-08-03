@@ -1,15 +1,18 @@
 #lang racket/base
 
+;; Jupyter kernel for Racket
+;; You probably don't want to run this directly.
+
 (require racket/list
          racket/contract
          racket/sandbox
-         "iracket-execute.rkt"
-         "iracket-connect.rkt"
-         "iracket-kernel-info.rkt"
-         "iracket-complete.rkt"
-         (prefix-in ipy: "ipython-message.rkt")
-         (prefix-in ipy: "ipython-services.rkt")
-         (prefix-in ipy: "ipython.rkt"))
+         "private/iracket-execute.rkt"
+         "private/iracket-connect.rkt"
+         "private/iracket-kernel-info.rkt"
+         "private/iracket-complete.rkt"
+         (prefix-in ipy: "private/ipython-message.rkt")
+         (prefix-in ipy: "private/ipython-services.rkt")
+         (prefix-in ipy: "private/ipython.rkt"))
 
 (provide main)
 
