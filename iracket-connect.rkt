@@ -2,7 +2,7 @@
 
 (require racket/contract
          json
-         (prefix-in ipy: "./ipython.rkt"))
+         (prefix-in ipy: "ipython.rkt"))
 
 (provide connect)
 

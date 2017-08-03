@@ -5,8 +5,8 @@
          racket/contract
          (for-syntax racket/base)
          zeromq
-         "./ipython-message.rkt"
-         "./ipython.rkt")
+         "ipython-message.rkt"
+         "ipython.rkt")
 
 (provide call-with-services
          receive-request

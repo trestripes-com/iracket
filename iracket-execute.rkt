@@ -8,8 +8,8 @@
          (for-syntax racket/base)
          json
          net/base64
-         (prefix-in ipy: "./ipython-message.rkt")
-         (prefix-in ipy: "./ipython-services.rkt"))
+         (prefix-in ipy: "ipython-message.rkt")
+         (prefix-in ipy: "ipython-services.rkt"))
 
 (provide make-execute)
 

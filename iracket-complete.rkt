@@ -6,9 +6,9 @@
          racket/sandbox
          json
          net/base64
-         (prefix-in ipy: "./ipython-message.rkt")
-         (prefix-in ipy: "./ipython-services.rkt")
-         (prefix-in ipy: "./ipython.rkt"))
+         (prefix-in ipy: "ipython-message.rkt")
+         (prefix-in ipy: "ipython-services.rkt")
+         (prefix-in ipy: "ipython.rkt"))
 
 (provide complete)
 

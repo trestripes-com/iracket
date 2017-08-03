@@ -3,13 +3,13 @@
 (require racket/list
          racket/contract
          racket/sandbox
-         "./iracket-execute.rkt"
-         "./iracket-connect.rkt"
-         "./iracket-kernel-info.rkt"
-         "./iracket-complete.rkt"
-         (prefix-in ipy: "./ipython-message.rkt")
-         (prefix-in ipy: "./ipython-services.rkt")
-         (prefix-in ipy: "./ipython.rkt"))
+         "iracket-execute.rkt"
+         "iracket-connect.rkt"
+         "iracket-kernel-info.rkt"
+         "iracket-complete.rkt"
+         (prefix-in ipy: "ipython-message.rkt")
+         (prefix-in ipy: "ipython-services.rkt")
+         (prefix-in ipy: "ipython.rkt"))
 
 (provide main)
 

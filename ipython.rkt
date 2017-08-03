@@ -6,7 +6,7 @@
          json
          sha
          zeromq
-         "./ipython-message.rkt")
+         "ipython-message.rkt")
 
 (provide (struct-out config)
          read-config
