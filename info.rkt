@@ -6,7 +6,7 @@
 (define collection "iracket")
 (define deps
   '("base"
-    "zeromq-lib"
+    "zeromq-r-lib"
     "libuuid"
     "sha"))
 (define build-deps
