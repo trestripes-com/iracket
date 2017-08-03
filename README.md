@@ -9,17 +9,19 @@ Racket bindings for the [C3.js](http://c3js.org/) charting library.
 # Installation
 
 First install the iracket package:
-
-* `raco pkg install iracket`
-
+```bash
+raco pkg install iracket
+```
 Then register the iracket kernel with IPython/Jupyter:
-
-* `racket -l iracket/install`
+```bash
+racket -l iracket/install
+```
 
 # Requirements
 
 * [Racket v6.10](http://racket-lang.org)
 * [ZeroMQ](http://zeromq.org)
+  - available from the `libzmq5` package on Debian/Ubuntu and from the `zeromq` package from Fedora
 * [IPython version 3.2.1](https://pypi.python.org/pypi/ipython/3.2.1)
 
 
