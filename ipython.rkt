@@ -2,9 +2,10 @@
 
 (require racket/string
          racket/contract
+         racket/match
          json
          sha
-         net/zmq
+         zeromq
          "./ipython-message.rkt")
 
 (provide (struct-out config)
@@ -46,37 +47,24 @@
 (define connection-key (make-parameter #f))
 
 ;; Delimeter between IPython ZMQ message identifiers and message body.
-(define message-delimiter (string->bytes/utf-8 "<IDS|MSG>"))
+(define message-delimiter #"<IDS|MSG>")
 
 ;; Receives an IPython message on the given socket.
 (define/contract (receive-message! socket)
-  (socket? . -> . message?)
-  (define (next)
-    (define blob (socket-recv! socket))
-    blob)
-  (define (read-until str)
-    (define (read-until* acc)
-      (define blob (next))
-      (if (equal? blob str)
-          acc
-          (read-until* (cons blob acc))))
-    (read-until* '()))
-  (define idents (read-until message-delimiter))
-  (define sig (next))
-  (define header-data (next))
-  (define parent-header (next))
-  (define metadata (next))
-  (define content (next))
+  (zmq-socket? . -> . message?)
+  (define frames (zmq-recv* socket))
+  (define-values (idents frames2)
+    (let loop ([acc null] [frames frames])
+      (cond [(equal? (car frames) message-delimiter)
+             (values acc (cdr frames))]
+            [else (loop (cons (car frames) acc) (cdr frames))])))
+  (match-define (list sig header-data parent-header metadata content) frames2)
   (parse-message sig idents header-data parent-header
                  metadata content))
 
 ;; Sends the given IPython message on the given socket.
 (define/contract (send-message! socket msg)
-  (socket? message? . -> . void?)
-  (define (send-piece! data)
-    (socket-send! socket data #:flags '(SNDMORE)))
-  (define (send-last! data)
-    (socket-send! socket data))
+  (zmq-socket? message? . -> . void?)
   (define header (message-header msg))
   (define idents (header-identifiers header))
   (define header-bytes (jsexpr->bytes (header->jsexpr header)))
@@ -88,14 +76,14 @@
     (cond [key (hash-message (connection-key)
                             header-bytes parent-bytes metadata content)]
           [else (string->bytes/utf-8 "")]))
-  (for ([ident (in-list idents)]) (send-piece! ident))
-  (send-piece! message-delimiter)
-  (send-piece! sig)
-  (send-piece! header-bytes)
-  (send-piece! parent-bytes)
-  (send-piece! metadata)
-  (send-last! content))
-
+  (zmq-send* socket
+             (append idents
+                     (list message-delimiter
+                           sig
+                           header-bytes
+                           parent-bytes
+                           metadata
+                           content))))
 
 ;; helpers for parsing/unparsing messages
 (define (parse-header idents header parent-header metadata)

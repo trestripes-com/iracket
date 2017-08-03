@@ -4,7 +4,7 @@
          racket/match
          racket/contract
          (for-syntax racket/base)
-         net/zmq
+         zeromq
          "./ipython-message.rkt"
          "./ipython.rkt")
 
@@ -24,20 +24,18 @@
   #:transparent)
 
 (define (call-with-services cfg action)
-  (call-with-context
-   (λ (ctx)
-     (define worker (current-thread))
-     (define (serve port port-type thunk)
-       (serve-socket/thread ctx cfg (port cfg) port-type worker thunk))
-     (define services
-       (make-services
-        (serve config-hb-port 'REP heartbeat)
-        (serve config-shell-port 'ROUTER shell)
-        (serve config-control-port 'ROUTER control)
-        (serve config-iopub-port 'PUB iopub)))
-     (begin0
-         (action services)
-       (kill-services services)))))
+  (define worker (current-thread))
+  (define (serve port port-type thunk)
+    (serve-socket/thread cfg (port cfg) port-type worker thunk))
+  (define services
+    (make-services
+     (serve config-hb-port 'rep heartbeat)
+     (serve config-shell-port 'router shell)
+     (serve config-control-port 'router control)
+     (serve config-iopub-port 'pub iopub)))
+  (begin0
+      (action services)
+    (kill-services services)))
 
 (define (receive-request services)
   (define msg (thread-receive))
@@ -85,8 +83,8 @@
 ;; implements the ipython heartbeat protocol
 (define (heartbeat socket _worker)
   (let loop ()
-    (define msg (socket-recv! socket))
-    (socket-send! socket msg)
+    (define msg (zmq-recv socket))
+    (zmq-send socket msg)
     (loop)))
 
 ;; implements shell and control protocol
@@ -109,26 +107,33 @@
     (send-message! socket msg)
     (loop)))
 
-(define (serve-socket ctx endpoint socket-type action)
-  (call-with-socket ctx socket-type
+(define (serve-socket endpoint socket-type action)
+  (call-with-socket socket-type
     (lambda (socket)
-      (socket-bind! socket endpoint)
+      (zmq-bind socket endpoint)
       (action socket))))
 
-(define (serve-socket/thread ctx cfg port socket-type worker action)
+(define (call-with-socket type proc)
+  (define socket (zmq-socket type))
+  (dynamic-wind
+    void
+    (lambda () (call-with-continuation-barrier (lambda () (proc socket))))
+    (lambda () (zmq-close socket))))
+
+(define (serve-socket/thread cfg port socket-type worker action)
   (define transport (config-transport cfg))
   (define ip (config-ip cfg))
   (define endpoint (format "~a://~a:~a" transport ip port))
   (thread
-   (λ () (serve-socket ctx endpoint socket-type
+   (λ () (serve-socket endpoint socket-type
                        (λ (socket) (action socket worker))))))
 
-(define (ipython-serve cfg ctx worker)
+(define (ipython-serve cfg worker)
   (make-services
-   (serve-socket/thread ctx cfg (config-hb-port cfg) 'REP worker heartbeat)
-   (serve-socket/thread ctx cfg (config-shell-port cfg) 'ROUTER worker shell)
-   (serve-socket/thread ctx cfg (config-control-port cfg) 'ROUTER worker control)
-   (serve-socket/thread ctx cfg (config-iopub-port cfg) 'PUB worker iopub)))
+   (serve-socket/thread cfg (config-hb-port cfg) 'rep worker heartbeat)
+   (serve-socket/thread cfg (config-shell-port cfg) 'router worker shell)
+   (serve-socket/thread cfg (config-control-port cfg) 'router worker control)
+   (serve-socket/thread cfg (config-iopub-port cfg) 'pub worker iopub)))
 
 (define (kill-services services)
   (kill-thread (services-shell services))
