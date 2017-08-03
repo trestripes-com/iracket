@@ -1,5 +1,10 @@
 #!/bin/bash
 
+##
+## Deprecated: use install.rkt instead
+## On the other hand, install.rkt doesn't yet install c3 support.
+##
+
 # echo commands as they're executed
 set -x
 
