@@ -7,6 +7,7 @@
 (define deps
   '("base"
     "zeromq-r-lib"
+    "sandbox-lib"
     "libuuid"
     "sha"))
 (define build-deps
