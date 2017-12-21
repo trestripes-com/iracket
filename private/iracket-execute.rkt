@@ -4,6 +4,9 @@
          racket/match
          racket/contract
          racket/sandbox
+         racket/pretty
+         racket/port
+         xml
          file/convertible
          (for-syntax racket/base)
          json
@@ -18,10 +21,43 @@
 (define (make-display-text v)
   (cons 'text/plain (format "~v" v)))
 
+(define (make-display-html v)
+  (define-values (pin pout) (make-pipe-with-specials))
+  (define (size-hook v d? out)
+    (cond [(and (convertible? v) (convert v 'png-bytes)) 1]
+          [else #f]))
+  (define (print-hook v d? out)
+    (define png-data (convert v 'png-bytes))
+    (define img-src (format "data:image/png;base64,~a" (base64-encode png-data)))
+    (define img-style
+      "display: inline; vertical-align: baseline; padding: 0pt; margin: 0pt; border: 0pt")
+    (write-special `(img ((style ,img-style) (src ,img-src))) out))
+  (parameterize ((pretty-print-columns 'infinity)
+                 (pretty-print-size-hook size-hook)
+                 (pretty-print-print-hook print-hook))
+    (pretty-print v pout))
+  (close-output-port pout)
+  ;; read-contents : InputPort[Special] -> (Listof (U String Special))
+  (define (read-contents in)
+    (define buf (make-bytes 1000))
+    (define (bs->string bs)
+      (bytes->string/utf-8 (apply bytes-append (reverse bs))))
+    (define (loop acc bs)
+      (define next (read-bytes-avail! buf in))
+      (cond [(eof-object? next)
+             (let ([acc (cons (bs->string bs) acc)])
+               (reverse acc))]
+            [(exact-positive-integer? next)
+             (loop acc (cons (subbytes buf 0 next) bs))]
+            [(procedure? next)
+             (let ([acc (cons (bs->string bs) acc)])
+               (loop (cons (next #f #f #f #f) acc) null))]))
+    (loop null null))
+  (cons 'text/html (xexpr->string `(code ,@(read-contents pin)))))
+
 (define (make-display-convertible conversion-type mime-type v
                                   #:encode [encode values])
-  (define result (and (convertible? v)
-                   (convert v conversion-type)))
+  (define result (and (convertible? v) (convert v conversion-type)))
   (if result
       (cons mime-type (bytes->string/latin-1 (encode result)))
       #f))
@@ -32,21 +68,10 @@
     [else #f]))
 
 (define (make-display-results v)
-  (define conv-results
-    (filter
-     values
-     (list (make-display-c3 v)
-           ;; svg seems to be broken in tons of browsers
-           ;; (make-display-convertible 'svg-bytes 'image/svg+xml v)
-           (make-display-convertible 'png-bytes 'image/png v #:encode base64-encode)
-           ;; (make-display-convertible 'gif-bytes 'image/gif v #:encode base64-encode)
-           ;; (make-display-convertible 'ps-bytes 'application/postscript v #:encode base64-encode)
-           (make-display-convertible 'pdf-bytes 'application/pdf v #:encode base64-encode)
-           (make-display-convertible 'text 'text/plain v))))
-  (cond [(pair? conv-results)
-         conv-results]
-        [else
-         (list (make-display-text v))]))
+  (filter values
+          (list (make-display-c3 v)
+                (make-display-html v)
+                (make-display-text v))))
 
 (define (make-kill-thread/custodian cust)
   (λ (t)
