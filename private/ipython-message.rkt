@@ -15,6 +15,7 @@
 ;; Message types
 (define shell-in-message-type/c
   (symbols 'kernel_info_request
+	   'comm_info_request
            'execute_request
            'complete_request
            'object_info_request
@@ -23,6 +24,7 @@
 
 (define shell-out-message-type/c
   (symbols 'kernel_info_reply
+	   'comm_info_reply
            'execute_reply
            'complete_reply
            'object_info_reply
@@ -83,6 +85,7 @@
 (define (reply-type parent-type)
   (case parent-type
     [(kernel_info_request) 'kernel_info_reply]
+    [(comm_info_request) 'comm_info_reply]
     [(execute_request) 'execute_reply]
     [(complete_request) 'complete_reply]
     [(object_info_request) 'object_info_reply]

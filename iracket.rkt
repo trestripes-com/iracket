@@ -9,6 +9,7 @@
          "private/iracket-execute.rkt"
          "private/iracket-connect.rkt"
          "private/iracket-kernel-info.rkt"
+         "private/iracket-comm-info.rkt"
          "private/iracket-complete.rkt"
          (prefix-in ipy: "private/ipython-message.rkt")
          (prefix-in ipy: "private/ipython-services.rkt")
@@ -46,6 +47,7 @@
    complete
    connect
    kernel-info
+   comm-info
    shutdown)
   #:transparent)
 
@@ -55,6 +57,7 @@
    (λ (msg) (complete e msg))
    (λ (_msg) (connect cfg))
    (λ (_msg) kernel-info)
+   (λ (_msg) comm-info)
    (λ (_msg) (hasheq 'restart #f))))
 
 (define (handle handlers msg)
@@ -62,6 +65,7 @@
   (define handler
     (case msg-type
       [(kernel_info_request) handlers-kernel-info]
+      [(comm_info_request) handlers-comm-info]
       [(connect_request) handlers-connect]
       [(execute_request) handlers-execute]
       [(complete_request) handlers-complete]
