@@ -70,7 +70,8 @@
       [(execute_request) handlers-execute]
       [(complete_request) handlers-complete]
       [(shutdown_request) handlers-shutdown]
-      [else (error (format "unknown message type: ~a" msg-type))]))
-  (values (ipy:make-response msg ((handler handlers) msg))
+      [else
+       ;; (eprintf "unknown message type: ~a\n" msg-type)
+       #f]))
+  (values (and handler (ipy:make-response msg ((handler handlers) msg)))
           (eq? 'shutdown_request msg-type)))
-

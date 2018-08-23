@@ -38,8 +38,7 @@
     (kill-services services)))
 
 (define (receive-request services)
-  (define msg (thread-receive))
-  (define respond-to (thread-receive))
+  (match-define (cons msg respond-to) (thread-receive))
   (values msg respond-to))
 
 (define (send-response services respond-to response)
@@ -91,10 +90,9 @@
 (define (shell-like who socket worker)
   (let loop ()
     (define msg (receive-message! socket))
-    (thread-send worker msg)
-    (thread-send worker (current-thread))
+    (thread-send worker (cons msg (current-thread)))
     (define response (thread-receive))
-    (send-message! socket response)
+    (when response (send-message! socket response))
     (loop)))
 
 (define (shell socket worker) (shell-like 'shell socket worker))
@@ -104,7 +102,7 @@
 (define (iopub socket worker)
   (let loop ()
     (define msg (thread-receive))
-    (send-message! socket msg)
+    (when msg (send-message! socket msg))
     (loop)))
 
 (define (serve-socket endpoint socket-type action)
