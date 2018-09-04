@@ -12,6 +12,7 @@ interactive notebook-style programming with Racket.
   - on Debian/Ubuntu Linux: install the `libzmq5` package
   - on RedHat/Fedora (Linux): install the `zeromq` package
   - on MacOS with Homebrew: run `brew install zmq`
+  - on Windows, automatically installed by Racket's `zeromq-r-lib` package
   - for other systems, see http://zeromq.org
 
 
@@ -23,7 +24,7 @@ raco pkg install iracket
 ```
 Then register the iracket kernel with Jupyter:
 ```bash
-racket -l iracket/install
+raco iracket install
 ```
 
 
