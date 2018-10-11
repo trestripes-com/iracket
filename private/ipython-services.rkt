@@ -6,7 +6,7 @@
          (for-syntax racket/base)
          zeromq
          json
-         racket/function
+         racket/port
          "ipython-message.rkt"
          "ipython.rkt")
 
@@ -81,41 +81,28 @@
   (send-stdin-request msg services (current-thread) "" #f)
   (define msg-reply (thread-receive))
   (define response (extract-stdin-reply msg-reply))
-  (string-append response "\n")
-  )
+  (string-append response "\n"))
 
-;; Make reader
-(define (make-reader get-stdin-utf8)
-  (define stdin-content (make-bytes 0))
-
-  ;; Read n bytes into bytes-string and return number read
-  (define (read-into-string s bytes-read)
-    (bytes-copy! s 0 stdin-content 0 bytes-read)
-    (set! stdin-content (subbytes stdin-content bytes-read))
-    bytes-read
-    )
-  (define (is-stdin-empty) (= (bytes-length stdin-content) 0))
-
-  (make-input-port 'stdin
-                   (lambda (s) 
-                     ;; If stdin is empty, fill with new requested value
-                     (when (is-stdin-empty)(set! stdin-content (string->bytes/utf-8 (get-stdin-utf8))))
-                     (define bytes-required (bytes-length s))
-                     (define bytes-available (bytes-length stdin-content))
-                     ;; Return value:
-                     (if (<= bytes-required bytes-available) 
-                         (read-into-string s bytes-required) 
-                         eof)); 
-                   #f
-                   void)
-  )
-
+;; make-fetch-input-port : Any (-> Bytes) -> InputPort
+(define (make-fetch-input-port name fetch)
+  (define-values (pipe-in pipe-out) (make-pipe))
+  (define (read-in buf)
+    (if (sync/timeout 0 pipe-in)
+        pipe-in
+        (let ([more (fetch)])
+          (write-bytes more pipe-out)
+          (read-in buf))))
+  (define (close)
+    (close-input-port pipe-in)
+    (close-output-port pipe-out))
+  (make-input-port/read-to-peek name read-in #f close))
 
 ;; custom input-port which sends & receives stdin messages
-(define stdin-buffer-size (make-parameter 1024))
-(define (make-stdin-port services msg [name #f])
-  (make-reader (λ () (curry request-stdin-from-frontend msg services)))
-)
+(define (make-stdin-port services msg [name 'stdin])
+  (make-fetch-input-port name
+                         (lambda ()
+                           (string->bytes/utf-8
+                            (request-stdin-from-frontend msg services)))))
 
 (define/contract (make-stream-port services name orig-msg)
   (services? (symbols 'stdout 'stderr) message? . -> . output-port?)
