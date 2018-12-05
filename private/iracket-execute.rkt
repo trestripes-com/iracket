@@ -19,7 +19,8 @@
 
 ;; execute_request
 (define (make-display-text v)
-  (cons 'text/plain (format "~v" v)))
+  (parameterize ((print-graph #t))
+    (cons 'text/plain (format "~v" v))))
 
 (define (make-display-html v)
   (define-values (pin pout) (make-pipe-with-specials))
