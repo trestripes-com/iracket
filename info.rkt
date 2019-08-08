@@ -3,6 +3,7 @@
 ;; ========================================
 ;; pkg info
 
+(define version "1.1")
 (define collection "iracket")
 (define deps
   '("base"
@@ -18,7 +19,7 @@
 ;; collect info
 
 (define name "iracket")
-;; (define scribblings '(["iracket.scrbl" ()]))
+(define scribblings '(["iracket.scrbl" ()]))
 
 ;; Doesn't actually do installation, just prints message.
 (define install-collection "install.rkt")
