@@ -21,8 +21,7 @@
               (lambda (services)
                 (hasheq 'kernel_info_request (lambda (msg) kernel-info)
                         'execute_request ((make-execute evaluator) services)
-                        'complete_request (lambda (msg) (complete evaluator msg))
-                        'is_complete_request (lambda (msg) (is-complete-request evaluator msg)))))
+                        'complete_request (lambda (msg) (complete evaluator msg)))))
   (printf "Kernel terminating.\n"))
 
 (define (create-evaluator cfg)

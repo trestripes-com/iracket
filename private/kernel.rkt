@@ -15,7 +15,7 @@
 ;; ============================================================
 ;; Info
 
-(provide kernel-info comm-info)
+(provide kernel-info)
 
 (define kernel-info
   (hasheq
@@ -36,16 +36,11 @@
                       'text "Racket docs"
                       'url "http://docs.racket-lang.org"))))
 
-(define comm-info
-  (hasheq))
-
 ;; ============================================================
 ;; Completion
 
 (provide (contract-out
           [complete
-           (-> any/c message? jsexpr?)]
-          [is-complete-request
            (-> any/c message? jsexpr?)]))
 
 ;; complete : Evaluator Message -> JSExpr
@@ -64,11 +59,6 @@
    'cursor_start (- cursor-pos (string-length prefix))
    'cursor_end (+ cursor-pos (string-length suffix) -1)
    'status "ok"))
-
-;; is-complete-request : Evaluator Message -> JSExpr
-(define (is-complete-request e msg)
-  (define code (hash-ref (message-content msg) 'code))
-  (hasheq 'status "unknown"))
 
 (define (string-prefix? prefix word)
   (and (<= (string-length prefix) (string-length word))

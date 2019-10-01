@@ -455,7 +455,8 @@
 (define (make-default-handlers cfg)
   (hasheq 'connect_request (lambda (msg) (connect cfg))
           'shutdown_request (lambda (msg) (hasheq 'restart #f))
-          'comm_info_request (lambda (msg) (hasheq))))
+          'comm_info_request (lambda (msg) (hasheq))
+          'is_complete_request (lambda (msg) (hasheq 'status "unknown"))))
 
 (define (add-default-handlers cfg h)
   (for/fold ([h h]) ([(k v) (in-hash (make-default-handlers cfg))])
