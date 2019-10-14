@@ -12,9 +12,8 @@
 (provide main)
 
 (define (main config-file-path)
-  ;; ipython hides stdout, but prints stderr, so this is for debugging
-  (current-output-port (current-error-port))
-  (display "Kernel starting.\n")
+  ;; Jupyter hides stdout, but prints stderr, so use eprintf for debugging.
+  (eprintf "Kernel starting.\n")
   (define cfg (with-input-from-file config-file-path read-config))
   (define evaluator (create-evaluator cfg))
   (run-kernel cfg
@@ -22,7 +21,7 @@
                 (hasheq 'kernel_info_request (lambda (msg) kernel-info)
                         'execute_request ((make-execute evaluator) services)
                         'complete_request (lambda (msg) (complete evaluator msg)))))
-  (printf "Kernel terminating.\n"))
+  (eprintf "Kernel terminating.\n"))
 
 (define (create-evaluator cfg)
   (parameterize ([sandbox-eval-limits (list #f #f)]
