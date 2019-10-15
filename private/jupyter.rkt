@@ -411,7 +411,7 @@
      (- end start))
    void))
 
-;; implements the ipython heartbeat protocol
+;; implements the jupyter heartbeat protocol
 (define (heartbeat socket _worker)
   (let loop ()
     (define msg (zmq-recv socket))
