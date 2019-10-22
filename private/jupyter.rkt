@@ -4,6 +4,7 @@
          racket/contract
          racket/string
          racket/port
+         racket/date
          libuuid
          json
          sha
@@ -36,6 +37,9 @@
    (make-hasheq)
    (uuid-generate)
    (header-session-id parent-header)
+   (parameterize ((date-display-format 'iso-8601))
+     (define now (seconds->date (current-seconds) #f))
+     (string-append (date->string now #t) "Z"))
    (header-username parent-header)
    (if msg-type msg-type (reply-type (header-msg-type parent-header)))))
 
@@ -125,6 +129,7 @@
    [metadata jsexpr?] ;; TODO hash table?
    [message-id string?] ;; uuid-string?
    [session-id string?] ;; uuid-string?
+   [date (or/c string? #f)] ;; ISO 8601 date string
    [username string?]
    [msg-type message-type/c])
   #:transparent)
@@ -225,6 +230,7 @@
    (bytes->jsexpr metadata)
    (hash-ref header 'msg_id)
    (hash-ref header 'session)
+   (hash-ref header 'date #f)
    (hash-ref header 'username)
    (string->symbol (hash-ref header 'msg_type))))
 
@@ -233,13 +239,16 @@
   (string->bytes/utf-8 (bytes->hex-string (hmac-sha256 key data))))
 
 (define (header->jsexpr hd)
-  (cond [hd (hasheq
-             'msg_id (header-message-id hd)
-             'username (header-username hd)
-             'session (header-session-id hd)
-             'msg_type (symbol->string (header-msg-type hd))
-             'version "5.0")]
-        [else (hasheq)]))
+  (define js
+    (cond [hd (hasheq
+               'msg_id (header-message-id hd)
+               'username (header-username hd)
+               'session (header-session-id hd)
+               'date (header-date hd)
+               'msg_type (symbol->string (header-msg-type hd))
+               'version "5.0")]
+          [else (hasheq)]))
+  (if (hash-ref js 'date) js (hash-remove js 'date)))
 
 ;; ----
 
