@@ -12,8 +12,9 @@
 ;; ============================================================
 ;; Messages
 
-(provide (struct-out message)
-         make-response)
+(provide make-response
+         message?
+         message-ref)
 
 ;; make-response : Message JSExpr [#:msg-type MessageType] -> Message
 ;; Make a response given a parent header, optionally overriding the
@@ -133,6 +134,12 @@
   ([header header?]
    [content jsexpr?])
   #:transparent)
+
+;; message-ref : Message Symbol [Any] -> Any
+(define (message-ref msg key [default (mk-message-ref-error msg key)])
+  (hash-ref (message-content msg) key default))
+(define ((mk-message-ref-error msg key))
+  (error 'message-ref "key not found\n  key: ~e\n  message: ~e" key msg))
 
 ;; ============================================================
 ;; Communication
@@ -347,7 +354,7 @@
                                     #:msg-type 'input_request)
                      (current-thread)))
   (define msg-reply (thread-receive))
-  (define response (hash-ref (message-content msg-reply) 'value))
+  (define response (message-ref msg-reply 'value))
   (string-append response "\n"))
 
 ;; make-fetch-input-port : Any (-> String) -> InputPort

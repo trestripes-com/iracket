@@ -45,8 +45,8 @@
 
 ;; complete : Evaluator Message -> JSExpr
 (define (complete e msg)
-  (define code (hash-ref (message-content msg) 'code))
-  (define cursor-pos (hash-ref (message-content msg) 'cursor_pos))
+  (define code (message-ref msg 'code))
+  (define cursor-pos (message-ref msg 'cursor_pos))
   (define prefix (car (regexp-match #px"[^\\s,)(]*$" code 0 cursor-pos)))
   (define suffix (car (regexp-match #px"^[^\\s,)(]*" code (sub1 cursor-pos))))
   (define words (call-in-sandbox-context e namespace-mapped-symbols))
@@ -74,8 +74,8 @@
   (define execution-count 0)
   (λ (msg)
     (set! execution-count (add1 execution-count))
-    (define code (hash-ref (message-content msg) 'code))
-    (define allow-stdin (hash-ref (message-content msg) 'allow_stdin))
+    (define code (message-ref msg 'code))
+    (define allow-stdin (message-ref msg 'allow_stdin))
     (call-in-sandbox-context e
      (λ ()
        (current-input-port (if allow-stdin (make-stdin-port services msg) (null-input-port)))
@@ -84,7 +84,7 @@
     (call-with-values
      (λ () (e code))
      (λ vs
-       (unless (hash-ref (message-content msg) 'silent #f)
+       (unless (message-ref msg 'silent #f)
          (for ([v (in-list vs)] #:when (not (void? v)))
            (define results (make-display-results v))
            (send-exec-result msg services execution-count (make-hasheq results))))))
