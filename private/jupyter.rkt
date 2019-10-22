@@ -12,8 +12,7 @@
 ;; ============================================================
 ;; Messages
 
-(provide (struct-out header)
-         (struct-out message)
+(provide (struct-out message)
          make-response)
 
 ;; make-response : Message JSExpr [#:msg-type MessageType] -> Message
