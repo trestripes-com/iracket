@@ -81,6 +81,7 @@
   (or/c 'display_data
         'execute_input
         'execute_result
+        'error
         'status
         'clear_output
         'stream))
@@ -303,7 +304,9 @@
           [make-stream-port
            (-> services? (or/c 'stdout 'stderr) message? output-port?)]
           [send-exec-result
-           (-> message? services? exact-integer? jsexpr? void?)]))
+           (-> message? services? exact-integer? jsexpr? void?)]
+          [send-exec-error
+           (-> message? services? exact-integer? string? string? (listof string?) void?)]))
 
 (define-struct/contract services
   ([heartbeat thread?]
@@ -348,6 +351,15 @@
                                           'data data
                                           'metadata (hasheq))
                               #:msg-type 'execute_result)))
+
+;; send-exec-error : Message Services Nat String String (Listof String) -> Void
+(define (send-exec-error msg services execution-count ename evalue traceback)
+  (thread-send (services-iopub services)
+               (make-response msg (hasheq 'execution_count execution-count
+                                          'ename ename
+                                          'evalue evalue
+                                          'traceback traceback)
+                              #:msg-type 'error)))
 
 ;; make-stdin-port : Services Message [Any] -> InputPort
 ;; custom input-port which sends & receives stdin messages

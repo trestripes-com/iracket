@@ -81,17 +81,38 @@
        (current-input-port (if allow-stdin (make-stdin-port services msg) (null-input-port)))
        (current-output-port (make-stream-port services 'stdout msg))
        (current-error-port (make-stream-port services 'stderr msg))))
-    (call-with-values
-     (λ () (e code))
-     (λ vs
+    (match (with-handlers ([(lambda (e) #t) (lambda (e) (list 'raise e))])
+             (call-with-values (lambda () (e code)) (lambda vs (cons 'values vs))))
+      ;; Note: if the evaluator is created with (sandbox-propagate-exceptions #f), then
+      ;; the raise path should never be used; the exception is printed to stderr instead.
+      [(list 'raise e)
+       ;; Jupyter notebook (v5.2.2) seems to only display traceback; it ignores
+       ;; ename and evalue, so give them dummy "error" values.
+       ;; See also https://github.com/jupyter/jupyter_client/issues/363
+       (define traceback (raised->traceback e))
+       (unless (message-ref msg 'silent #f)
+         (send-exec-error msg services execution-count "error" "error" traceback))
+       (hasheq 'status "error"
+               'execution_count execution-count
+               'ename "error"
+               'evalue "error"
+               'traceback traceback)]
+      [(cons 'values vs)
        (unless (message-ref msg 'silent #f)
          (for ([v (in-list vs)] #:when (not (void? v)))
            (define results (make-display-results v))
-           (send-exec-result msg services execution-count (make-hasheq results))))))
-    (hasheq
-     'status "ok"
-     'execution_count execution-count
-     'user_expressions (hasheq))))
+           (send-exec-result msg services execution-count (make-hasheq results))))
+       (hasheq 'status "ok"
+               'execution_count execution-count
+               'user_expressions (hasheq))])))
+
+(define (raised->traceback e)
+  (cond [(exn? e)
+         (let ([out (open-output-string)])
+           (parameterize ((current-error-port out))
+             ((error-display-handler) (exn-message e) e))
+           (string-split (get-output-string out) "\n"))]
+        [else (list (format "not an exception: ~e" e))]))
 
 (define (null-input-port) (open-input-bytes #""))
 
