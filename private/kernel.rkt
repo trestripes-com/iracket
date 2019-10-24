@@ -76,13 +76,16 @@
     (set! execution-count (add1 execution-count))
     (define code (message-ref msg 'code))
     (define allow-stdin (message-ref msg 'allow_stdin))
-    (call-in-sandbox-context e
-     (λ ()
-       (current-input-port (if allow-stdin (make-stdin-port services msg) (null-input-port)))
-       (current-output-port (make-stream-port services 'stdout msg))
-       (current-error-port (make-stream-port services 'stderr msg))))
-    (match (with-handlers ([(lambda (e) #t) (lambda (e) (list 'raise e))])
-             (call-with-values (lambda () (e code)) (lambda vs (cons 'values vs))))
+    (match (let ([in (if allow-stdin (make-stdin-port services msg) (null-input-port))]
+                 [out (make-stream-port services 'stdout msg)]
+                 [err (make-stream-port services 'stderr msg)])
+             (with-handlers ([(lambda (e) #t) (lambda (e) (list 'raise e))])
+               (call-in-sandbox-context e
+                 (λ ()
+                   (current-input-port in)
+                   (current-output-port out)
+                   (current-error-port err)))
+               (call-with-values (lambda () (e code)) (lambda vs (cons 'values vs)))))
       ;; Note: if the evaluator is created with (sandbox-propagate-exceptions #f), then
       ;; the raise path should never be used; the exception is printed to stderr instead.
       [(list 'raise e)
