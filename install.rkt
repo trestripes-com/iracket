@@ -185,7 +185,7 @@
 (define (make-kernel-json racket-exe)
   (hash 'argv `(,(path->string racket-exe)
                 "-l" "iracket/iracket"
-                "-m" "{connection_file}")
+                "--" "{connection_file}")
         'display_name "Racket"
         'language "racket"))
 
