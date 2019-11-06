@@ -9,7 +9,7 @@
   '("base"
     "zeromq-r-lib"
     "sandbox-lib"
-    "libuuid"
+    "uuid"
     "sha"))
 (define build-deps
   '("racket-doc"

@@ -5,7 +5,7 @@
          racket/string
          racket/port
          racket/date
-         libuuid
+         uuid
          json
          sha
          zeromq)
@@ -35,7 +35,7 @@
    (header-identifiers parent-header)
    parent-header
    (make-hasheq)
-   (uuid-generate)
+   (uuid-string)
    (header-session-id parent-header)
    (parameterize ((date-display-format 'iso-8601))
      (define now (seconds->date (current-seconds) #f))
