@@ -42,8 +42,10 @@
                  ;; -- Same as trusted:
                  [sandbox-memory-limit  #f] ;; default = 30 (MB)
                  [sandbox-eval-limits   #f] ;; default = '(30 20) (sec,MB)
+                 [sandbox-make-inspector current-inspector]
+                 [sandbox-make-code-inspector current-code-inspector]
                  ;; -- Not set by call/trusted:
-                 [sandbox-gui-available #f] ;; GUI makes no sense for Jupyter kernel
+                 [sandbox-gui-available #t] ;; no effect???
                  [sandbox-propagate-exceptions #f] ;; default = #t -- FIXME?
                  [sandbox-namespace-specs (cons sandbox-make-namespace '(file/convertible))]
                  [sandbox-path-permissions '((read "/"))])
