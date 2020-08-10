@@ -50,7 +50,31 @@
     (proc)))
 
 (define (make-racket-evaluator)
-  (make-evaluator '(begin)))
+  (define e (make-evaluator '(begin)))
+  (call-in-sandbox-context e
+    (lambda ()
+      ;; Goal: obtain a nearly-empty namespace with registry of sandbox's
+      ;; initial namespace and with attached modules BUT that does not prevent
+      ;; GC of that namespace if the sandbox's namespace is later replaced.
+      (define init-ns (current-namespace))
+      (define varref0 (eval '(#%variable-reference)))
+      (define root-ns (variable-reference->empty-namespace varref0))
+      (define mods-to-attach (cdr (sandbox-namespace-specs)))
+      (define varref
+        (parameterize ((current-namespace root-ns))
+          (for ([mod (in-list (cdr (sandbox-namespace-specs)))])
+            (namespace-attach-module init-ns mod))
+          (namespace-require '(only racket/kernel #%variable-reference))
+          (eval '(#%variable-reference))))
+      (current-kernel-make-namespace
+       (lambda (language)
+         (define ns (variable-reference->empty-namespace varref))
+         (parameterize ((current-namespace ns))
+           (for ([mod (in-list mods-to-attach)])
+             (namespace-attach-module root-ns mod))
+           (namespace-require language)
+           ns)))))
+  e)
 
 
 ;; ============================================================
