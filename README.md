@@ -41,3 +41,8 @@ and create a new notebook with the Racket kernel, or open
 # Examples
 
 See the `examples` subdirectory for example notebooks.
+
+# Acknowledgments
+
+The first version of IRacket was by Theo Giannakopoulos (then at BAE
+Systems), for the PPAML program.
