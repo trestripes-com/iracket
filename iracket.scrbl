@@ -99,6 +99,12 @@ If @racket[reader-mod] is given, the kernel's reader is set to the
 @racketidfont{read-syntax} export of @racket[reader-mod] (a module
 path); otherwise the kernel's reader is set to Racket's
 @racket[read-syntax].
+
+Warning: If @racket[reader-mod] is given, its @racketidfont{read-syntax} export
+must be suitable for reading top-level forms. For example,
+@racketmodname[scribble/reader] is suitable, but
+@racketmodname[at-exp/lang/reader] is not suitable, because it provides a
+@emph{whole-module meta-reader}.
 }
 
 If a cell contains @litchar{#lang iracket/lang}, it must be the first
@@ -161,6 +167,7 @@ To avoid this problem, avoid redefining names.
 (values))] before the definition above. This form of @racket[define-syntaxes] is
 only allowed at the top level, and it changes @racketidfont{range} to resolve as
 a binding in the top-level environment without giving it a value.)
+
 
 @subsection[#:tag "iracket-lang"]{@racket[#, @(hash-lang) #, @racketmodname[iracket/lang]]}
 
