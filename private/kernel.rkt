@@ -67,7 +67,16 @@
 ;; ============================================================
 ;; Execute
 
-(provide make-execute)
+(require (submod "../lang.rkt" config))
+
+(provide make-execute
+         current-kernel-make-namespace)
+
+;; current-kernel-make-namespace : parameter of (module-path? -> namespace?)
+;; Used by execute & "#lang iracket/lang" to make a new namespace that shares
+;; the original's root namespace (and thus module instances) and attached
+;; modules. PRE: run in sandbox context
+(define current-kernel-make-namespace (make-parameter #f))
 
 ;; make-execute : Evaluator -> Services -> Message -> JSExpr
 (define ((make-execute e) services)
@@ -79,13 +88,7 @@
     (match (let ([in (if allow-stdin (make-stdin-port services msg) (null-input-port))]
                  [out (make-stream-port services 'stdout msg)]
                  [err (make-stream-port services 'stderr msg)])
-             (with-handlers ([(lambda (e) #t) (lambda (e) (list 'raise e))])
-               (call-in-sandbox-context e
-                 (λ ()
-                   (current-input-port in)
-                   (current-output-port out)
-                   (current-error-port err)))
-               (call-with-values (lambda () (e code)) (lambda vs (cons 'values vs)))))
+             (do-execute e code in out err))
       ;; Note: if the evaluator is created with (sandbox-propagate-exceptions #f), then
       ;; the raise path should never be used; the exception is printed to stderr instead.
       [(list 'raise e)
@@ -108,6 +111,33 @@
        (hasheq 'status "ok"
                'execution_count execution-count
                'user_expressions (hasheq))])))
+
+(define (do-execute e code0 in out err)
+  (define lang-rx #px"^#lang iracket/lang(?:[\\s]|$)")
+  (define code
+    (cond [(regexp-match? lang-rx code0)
+           (define code-in (open-input-string code0))
+           (port-count-lines! code-in)
+           (void (regexp-match lang-rx code-in)) ;; consume from input
+           (define config (read-lang-config code-in))
+           (call-in-sandbox-context e
+             (lambda ()
+               (define ns ((current-kernel-make-namespace) (config:get-language config)))
+               (current-namespace ns)
+               (define read-stx (config:get-read-syntax config ns))
+               (sandbox-reader (lambda (src)
+                                 (port->list (lambda (in) (read-stx src in))
+                                             (current-input-port))))))
+           code-in]
+          [else code0]))
+  (with-handlers ([(lambda (e) #t) (lambda (e) (list 'raise e))])
+    (call-in-sandbox-context e
+      (λ ()
+        (current-input-port in)
+        (current-output-port out)
+        (current-error-port err)))
+    (call-with-values (lambda () (e code))
+                      (lambda vs (cons 'values vs)))))
 
 (define (raised->traceback e)
   (cond [(exn? e)
