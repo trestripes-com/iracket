@@ -131,10 +131,14 @@ Scribble's reader:
 @(require (for-label (only-in racket/list [range r:range])))
 @(define (r:range) @racketlink[r:range]{@racketfont{range}})
 
-Due to the combination of Racket's macro system, its recursive top-level
-environment, and the fact that the REPL receives and processes forms one at a
-time, the Racket REPL occasionally produces unexpected behavior. Consider the
-following program:
+Due to the combination of Racket's macro system, its recursive
+top-level environment, and the fact that the REPL receives and
+processes forms one at a time, the Racket REPL occasionally produces
+unexpected behavior. These problems are known in the Racket community
+as ``the top level is hopeless''. The same problems occur in Jupyter
+notebooks.
+
+For example, consider the following program:
 
 @racketblock[
 (code:comment "range : Real Real -> Real")
