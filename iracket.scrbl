@@ -123,6 +123,8 @@ Scribble's reader:
 #, @tt{#lang iracket/lang #:require racket/base #:reader scribble/reader}
 ]
 
+@history[#:added "1.2"]
+
 
 @subsection[#:tag "hopeless"]{The Top Level (REPL) Is Hopeless}
 
@@ -205,3 +207,5 @@ etc. In contrast, Racket generally uses a fixed set of parameter values for
 reading modules (see @racketmodname[syntax/modread]).}
 
 ]
+
+@history[#:added "1.2"]
