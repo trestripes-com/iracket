@@ -13,7 +13,8 @@
     "sha"))
 (define build-deps
   '("racket-doc"
-    "scribble-lib"))
+    "scribble-lib"
+    "scribble-doc"))
 
 ;; ========================================
 ;; collect info
