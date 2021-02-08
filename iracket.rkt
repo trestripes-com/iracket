@@ -46,7 +46,7 @@
                  [sandbox-gui-available #f] ;; GUI makes no sense for Jupyter kernel
                  [sandbox-propagate-exceptions #f] ;; default = #t -- FIXME?
                  [sandbox-namespace-specs (cons sandbox-make-namespace '(file/convertible))]
-                 [sandbox-path-permissions '((read "/"))])
+                 [sandbox-path-permissions '((execute "/"))])
     (proc)))
 
 (define (make-racket-evaluator)
